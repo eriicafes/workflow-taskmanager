@@ -12,8 +12,8 @@ github.com/digitallysavvy/go-ai v0.5.2 h1:RMrkCLPGrnmMEfZkfamWAFexU3rqwVY74CZBNQ
 github.com/digitallysavvy/go-ai v0.5.2/go.mod h1:qlxWq/b+bx8ZDAYtDvbOgGfDpMMkBP/m7nkl77+UPEE=
 github.com/eriicafes/go-dev v0.4.0 h1:9nGPx2o4OXvhspp+Va2x/B5yexeOI4lRocfeti+SQ8Y=
 github.com/eriicafes/go-dev v0.4.0/go.mod h1:eE3uJlyIVYx5XrWWkgK2dEZFWkUbOiwiuxg05UTuIUM=
-github.com/eriicafes/go-workflow v0.7.0 h1:R8+9oASneFzq2OYLyggy6attRP1R6K4BmqjVrTKsKFw=
-github.com/eriicafes/go-workflow v0.7.0/go.mod h1:OKXcROKHn5kgfGVTMY9fbG0lNQfMO6LqIeX4vUdrSIc=
+github.com/eriicafes/go-workflow v0.8.0 h1:mCGu9/quMkgqgD89Ork421R2Ha7Lw6I2awAH6UFnfQs=
+github.com/eriicafes/go-workflow v0.8.0/go.mod h1:OKXcROKHn5kgfGVTMY9fbG0lNQfMO6LqIeX4vUdrSIc=
 github.com/eriicafes/httpx v0.5.1 h1:xvzgjdLu6ARw111TCullYUxmLpmwVxblRuLXZSVMJ0c=
 github.com/eriicafes/httpx v0.5.1/go.mod h1:aBxfPwHB715UNrn4UTS4jSeox46Bml0fPNZ7+JYTmZI=
 github.com/eriicafes/tmpl v0.16.0 h1:CpV2x7M3ITXiM4nRCdCY1hPaQxKwvtamgs/lsOml1v4=

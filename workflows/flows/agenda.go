@@ -20,8 +20,14 @@ import (
 func (f *Flows) Agenda(ctx context.Context, input workflows.Agenda) (workflows.AgendaResult, error) {
 	var result workflows.AgendaResult
 	self := workflow.GetWorkflowMetadata(ctx).RunID
-	if err := sleepUntil(ctx, input.At); err != nil {
+	now, err := workflow.Now(ctx)
+	if err != nil {
 		return result, err
+	}
+	if wait := input.At.Sub(now); wait > 0 {
+		if err := workflow.Sleep(ctx, wait); err != nil {
+			return result, err
+		}
 	}
 	sent, err := workflow.Step(ctx, f.sendAgenda, scoped[string]{ChatID: input.ChatID, Input: self})
 	if err != nil || !sent.Current {
@@ -34,23 +40,6 @@ func (f *Flows) Agenda(ctx context.Context, input workflows.Agenda) (workflows.A
 	}
 	_, err = workflow.Step(ctx, f.continueAgenda, agendaHandoff{ChatID: input.ChatID, Prev: self, Next: run.ID()})
 	return result, err
-}
-
-// sleepUntil sleeps until at, in sleeps of at most maxSleep.
-func sleepUntil(ctx context.Context, at time.Time) error {
-	for {
-		now, err := workflow.Now(ctx)
-		if err != nil {
-			return err
-		}
-		wait := at.Sub(now)
-		if wait <= 0 {
-			return nil
-		}
-		if err := workflow.Sleep(ctx, min(wait, maxSleep)); err != nil {
-			return err
-		}
-	}
 }
 
 type agendaSent struct {

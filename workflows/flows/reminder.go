@@ -14,8 +14,11 @@ import (
 	"github.com/eriicafes/workflow-taskmanager/workflows"
 )
 
-// maxSleep keeps each sleep within the seven days Vercel Queues can delay a
-// delivery, so long waits work without QStash.
+// maxSleep bounds how long one Reminder run sleeps before handing off to the
+// next. go-workflow sleeps longer on its own, but a run stays on the
+// deployment it started on, and each handoff starts the next run on the
+// latest deployment, so a reminder far ahead isn't lost when old deployments
+// are deleted.
 const maxSleep = 6 * 24 * time.Hour
 
 // Reminder is one link of a reminder's chain of runs. It sleeps toward

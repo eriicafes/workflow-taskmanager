@@ -60,10 +60,9 @@ Every message is pushed to the user's mailbox in Redis, then wakes their
 `Conversation` run through a hook, or starts one when none is listening. A
 message that arrives while the agent is replying waits its turn and is
 answered with that context, and mail that arrives as a run ends is picked up
-by the next. No wait
-in any workflow is longer than six days, under the seven days Vercel Queues
-delays, and every workflow embeds `workflow.StartOnLatest`, so runs move to
-new deployments within days.
+by the next. Every workflow embeds `workflow.StartOnLatest`, and no run
+sleeps longer than six days before starting the next, so runs move to new
+deployments within days and none is stranded on a deleted deployment.
 
 Data lives in Redis under `taskmanager:*`: the bot, allowed users and access
 requests, and per user their settings, tasks, habits, and the last messages of
