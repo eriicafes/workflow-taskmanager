@@ -16,13 +16,12 @@
   <div class="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 p-5 sm:p-6">
     <div class="{{ clsx
       "grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold"
-      (eq .state "done") "bg-success-soft text-success"
+      (eq .state "done") "bg-primary/10 text-primary"
       (eq .state "open") "bg-primary text-primary-foreground"
       (eq .state "locked") "bg-muted text-muted-foreground"
     }}">{{ if eq .state "done" }}✓{{ else }}{{ .n }}{{ end }}</div>
     <div class="flex min-h-8 flex-wrap items-center gap-x-2 gap-y-1">
       <h2 class="font-semibold">{{ .title }}</h2>
-      {{ if eq .state "done" }}{{ template "ui/badge" props "variant" "success" "children" "Done" }}{{ end }}
     </div>
     <div class="col-span-2 min-w-0 sm:col-span-1 sm:col-start-2">
       {{ if eq .state "done" }}
