@@ -7,7 +7,7 @@ build habits: reminders daily at set times ("meds at 8 am and 8 pm"), or every
 few hours within a window ("water every 2 hours, 9 to 9"), on every day or some
 weekdays, with Done and Skip buttons and streaks.
 
-It is built like [LoveLoop](https://github.com/eriicafes/loveloop): a Go app on Vercel on
+It is a Go app on Vercel built on
 [go-workflow](https://github.com/eriicafes/go-workflow), where every
 conversation, reminder and agenda is a durable run, and the agent is a
 [`workflowai`](https://github.com/eriicafes/go-workflow/tree/main/workflowai)
@@ -56,8 +56,11 @@ reminder buttons update the store and edit the reminder in place. Reminders,
 the agenda and button taps leave a note in the conversation, so when the user
 next writes, the agent knows what it sent and what they tapped.
 
-Messages go to the user's mailbox in Redis and wake their `Conversation` run
-through a hook, or start one when none is listening, as in LoveLoop. No wait
+Every message is pushed to the user's mailbox in Redis, then wakes their
+`Conversation` run through a hook, or starts one when none is listening. A
+message that arrives while the agent is replying waits its turn and is
+answered with that context, and mail that arrives as a run ends is picked up
+by the next. No wait
 in any workflow is longer than six days, under the seven days Vercel Queues
 delays, and every workflow embeds `workflow.StartOnLatest`, so runs move to
 new deployments within days.
@@ -111,10 +114,18 @@ Without Vite, build the assets once with `pnpm build` and run
    `WORKFLOW_HTTP_BASE_URL` to your production domain plus `/v1/workflow`.
 3. Deploy, open the deployment's URL, sign in, and follow the guide.
 
-`vercel.json`, `api/workflow-web.ts` and the asset build work as in LoveLoop:
-the queue function subscribes to the `taskmanager-workflow` topic, every other
-path goes to `api/index.go`, and `/_workflow` only answers browsers signed in
-to the setup page.
+`vercel.json` installs and builds the Tailwind assets before the Go functions
+compile, so `web/dist` is embedded in them, and serves `web/dist` as the
+static output. It subscribes `api/queue.go` to the `taskmanager-workflow`
+topic, so it has no public URL, and rewrites every other path to
+`api/index.go`, which serves the setup page, Telegram's webhook at
+`/telegram`, and the World's endpoints under `/v1/workflow`. The World's RPC
+endpoint answers only requests with `WORKFLOW_HTTP_TOKEN` as a bearer token,
+and none when it is unset.
+
+`api/workflow-web.ts` serves the Workflow SDK web UI at `/_workflow`. It reads
+runs through `go-workflow/world-http`, and answers only browsers signed in to
+the setup page by checking the same session cookie.
 
 The bot token sits in Redis in plain text, as it would in an environment
 variable; anyone with access to the Redis database can control the bot.
