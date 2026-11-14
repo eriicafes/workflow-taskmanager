@@ -1,0 +1,86 @@
+<main class="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10 sm:py-14">
+  <header class="flex flex-wrap items-center gap-x-4 gap-y-3">
+    <div class="flex min-w-60 flex-1 items-center gap-4">
+      <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent text-2xl">✅</div>
+      <div class="min-w-0 flex-1">
+        <h1 class="text-2xl font-semibold tracking-tight">Set up Task Manager</h1>
+        <p class="text-sm text-muted-foreground">
+          {{ if .Setup.Complete }}All set! Your bot is ready to use.{{ else }}Connect your own Telegram bot in a few minutes.{{ end }}
+        </p>
+      </div>
+    </div>
+    <div class="ml-auto flex items-center gap-1">
+      {{ if .Setup.Complete }}
+      {{ template "ui/button" props "href" "/" "variant" "outline" "size" "sm" "children" "Dashboard" }}
+      {{ end }}
+      <form method="post" action="/logout">
+        {{ template "ui/button" props "type" "submit" "variant" "ghost" "size" "sm" "children" "Sign out" }}
+      </form>
+    </div>
+  </header>
+
+  <div class="flex items-center gap-3">
+    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+      <div class="h-full rounded-full bg-primary transition-all" style="width: {{ .Setup.Percent }}%"></div>
+    </div>
+    <span class="shrink-0 text-xs font-medium text-muted-foreground">{{ .Setup.DoneCount }} of {{ .Setup.Steps }} done</span>
+  </div>
+
+  {{ with .Flash.Message }}
+  {{ template "ui/alert" props "variant" (or (and $.Flash.Error "destructive") "success") "children" . }}
+  {{ end }}
+  {{ with .Setup.StoreError }}
+  {{ template "ui/alert" props "variant" "destructive" "title" "The store isn't available" "children" . }}
+  {{ end }}
+
+  <ol class="flex flex-col gap-4">
+    {{ template "guide-step" props
+      "n" 1 "title" "Create a bot with BotFather" "state" (.Setup.State 1)
+      "children" (tmpl "step-create" .Setup)
+      "summary" "You made a bot with @BotFather."
+    }}
+    {{ template "guide-step" props
+      "n" 2 "title" "Paste your bot's token" "state" (.Setup.State 2)
+      "children" (tmpl "step-token" .Setup)
+      "summary" (tmpl "step-token-done" .Setup)
+    }}
+    {{ template "guide-step" props
+      "n" 3 "title" "Connect it to Task Manager" "state" (.Setup.State 3)
+      "children" (tmpl "step-webhook" .Setup)
+      "summary" (tmpl "step-webhook-done" .Setup)
+      "locked" "Save your bot's token first."
+    }}
+    {{ template "guide-step" props
+      "n" 4 "title" "Allow your Telegram account" "state" (.Setup.State 4)
+      "children" (tmpl "step-access" .Setup)
+      "summary" (tmpl "step-access-done" .Setup)
+      "locked" "Connect the bot first, so your message reaches Task Manager."
+    }}
+  </ol>
+
+  {{ if .Setup.Complete }}
+  {{ template "ui/card" props "children" (tmpl "guide-complete" .Setup) }}
+  {{ end }}
+</main>
+
+{{ if .Setup.Waiting }}
+<script>
+  // Reload to show the owner's message once they send it, but not while
+  // they type an ID by hand.
+  setTimeout(function check() {
+    var el = document.activeElement;
+    if (el && el.tagName === "INPUT" && el.value) return setTimeout(check, 4000);
+    location.reload();
+  }, 4000);
+</script>
+{{ end }}
+
+{{ define "guide-complete" }}
+<div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+  <div class="min-w-0 flex-1">
+    <p class="font-semibold">🎉 You're all set</p>
+    <p class="text-sm text-muted-foreground">Message <a class="font-medium text-primary hover:underline" href="https://t.me/{{ .Bot.Username }}" target="_blank" rel="noopener">@{{ .Bot.Username }}</a> something like "call the dentist tomorrow at 10" or "drink water every 2 hours".</p>
+  </div>
+  {{ template "ui/button" props "href" "/" "children" "Go to dashboard" }}
+</div>
+{{ end }}

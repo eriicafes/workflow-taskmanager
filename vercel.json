@@ -1,0 +1,39 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "web/dist",
+  "functions": {
+    "api/queue.go": {
+      "maxDuration": 300,
+      "experimentalTriggers": [
+        {
+          "type": "queue/v2beta",
+          "topic": "taskmanager-workflow"
+        }
+      ]
+    },
+    "api/index.go": {
+      "maxDuration": 30
+    },
+    "api/workflow-web.ts": {
+      "maxDuration": 30,
+      "includeFiles": "node_modules/@workflow/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/_workflow/:path*",
+      "destination": "/api/workflow-web"
+    },
+    {
+      "source": "/_workflow",
+      "destination": "/api/workflow-web"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ]
+}

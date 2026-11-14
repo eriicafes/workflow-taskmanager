@@ -1,0 +1,69 @@
+{{/* access-requests props: requests, from (guide or empty). */}}
+{{ define "access-requests" }}
+<ul class="divide-y rounded-lg border">
+  {{ range .requests }}
+  <li class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2.5">
+    <div class="min-w-0">
+      <p class="truncate text-sm font-medium">
+        {{ or .Name "Someone" }}{{ with .Username }} <span class="font-normal text-muted-foreground">@{{ . }}</span>{{ end }}
+      </p>
+      <p class="text-xs text-muted-foreground">ID <span class="font-mono">{{ .ID }}</span> · messaged {{ .When }}</p>
+    </div>
+    <div class="flex items-center gap-1">
+      <form method="post" action="/setup/users/allow">
+        {{ with $.from }}<input type="hidden" name="from" value="{{ . }}" />{{ end }}
+        <input type="hidden" name="id" value="{{ .ID }}" />
+        {{ template "ui/button" props "type" "submit" "size" "sm" "children" "Allow" }}
+      </form>
+      <form method="post" action="/setup/users/dismiss">
+        {{ with $.from }}<input type="hidden" name="from" value="{{ . }}" />{{ end }}
+        <input type="hidden" name="id" value="{{ .ID }}" />
+        {{ template "ui/button" props "type" "submit" "variant" "ghost" "size" "sm" "children" "Dismiss" }}
+      </form>
+    </div>
+  </li>
+  {{ end }}
+</ul>
+{{ end }}
+
+{{/* allow-form props: from (guide or empty). */}}
+{{ define "allow-form" }}
+<form method="post" action="/setup/users/allow" class="flex flex-col gap-2 sm:flex-row">
+  {{ with .from }}<input type="hidden" name="from" value="{{ . }}" />{{ end }}
+  {{ template "ui/label" props "for" "allow_id" "children" "Telegram user ID" "class" "sr-only" }}
+  <input
+    id="allow_id" name="id" type="text" inputmode="numeric" pattern="[0-9]+" required
+    placeholder="Telegram user ID, like 123456789" autocomplete="off"
+    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-xs transition-colors placeholder:font-sans placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+  {{ template "ui/button" props "type" "submit" "variant" "outline" "class" "shrink-0" "children" "Allow" }}
+</form>
+{{ end }}
+
+{{ define "access-card-content" }}
+<div class="flex flex-col gap-5">
+  <ul class="divide-y">
+    {{ range .Allowed }}
+    <li class="flex items-center justify-between gap-3 py-2 text-sm">
+      <span class="min-w-0 truncate">
+        {{ or .Name "Hasn't messaged yet" }} <span class="font-mono text-xs text-muted-foreground">{{ .ID }}</span>
+      </span>
+      <form method="post" action="/setup/users/remove" onsubmit="return confirm('Stop {{ or .Name .ID }} from using the bot?')">
+        <input type="hidden" name="id" value="{{ .ID }}" />
+        {{ template "ui/button" props "type" "submit" "variant" "ghost" "size" "sm" "children" "Remove" }}
+      </form>
+    </li>
+    {{ end }}
+  </ul>
+  {{ if .Requests }}
+  <div class="flex flex-col gap-2">
+    <h3 class="text-sm font-medium">Asked to use the bot</h3>
+    {{ template "access-requests" props "requests" .Requests }}
+  </div>
+  {{ end }}
+  <div class="flex flex-col gap-2">
+    <h3 class="text-sm font-medium">Allow someone</h3>
+    <p class="text-xs text-muted-foreground">Ask them to message @{{ .Bot.Username }}: they show up above with their ID. Or enter an ID from @userinfobot.</p>
+    {{ template "allow-form" props }}
+  </div>
+</div>
+{{ end }}

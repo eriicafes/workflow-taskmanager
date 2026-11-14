@@ -1,0 +1,54 @@
+{{ define "users-card-content" }}
+{{ if .UsersError }}
+<p class="wrap-break-word text-sm text-destructive">{{ .UsersError }}</p>
+{{ else if .Users }}
+<div class="flex flex-col gap-6">
+  {{ range .Users }}
+  <div>
+    <div class="flex flex-wrap items-center gap-2">
+      <h3 class="text-sm font-semibold">{{ .Name }}</h3>
+      {{ template "ui/badge" props "variant" "outline" "children" .Timezone }}
+      {{ if .Paused }}{{ template "ui/badge" props "variant" "warning" "children" "Paused" }}{{ end }}
+    </div>
+    <div class="mt-2 grid gap-4 sm:grid-cols-2">
+      <div>
+        <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tasks{{ with .Done }} · {{ . }} done{{ end }}</p>
+        {{ if .Tasks }}
+        <ul class="mt-1 divide-y">
+          {{ range .Tasks }}{{ $task := . }}
+          <li class="flex items-baseline justify-between gap-3 py-1.5 text-sm">
+            <span class="min-w-0 truncate">{{ .Title }}</span>
+            {{ with .Due }}<span class="{{ clsx "shrink-0 text-xs" $task.Overdue "text-destructive" (not $task.Overdue) "text-muted-foreground" }}">{{ . }}</span>{{ end }}
+          </li>
+          {{ end }}
+        </ul>
+        {{ else }}
+        <p class="mt-1 text-sm text-muted-foreground">Nothing open.</p>
+        {{ end }}
+      </div>
+      <div>
+        <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Habits</p>
+        {{ if .Habits }}
+        <ul class="mt-1 divide-y">
+          {{ range .Habits }}
+          <li class="py-1.5 text-sm">
+            <div class="flex items-baseline justify-between gap-3">
+              <span class="min-w-0 truncate">{{ .Name }}</span>
+              {{ if gt .Streak 1 }}<span class="shrink-0 text-xs">🔥 {{ .Streak }}</span>{{ end }}
+            </div>
+            <p class="text-xs text-muted-foreground">{{ .Schedule }}{{ with .Today }} · {{ . }} today{{ end }}</p>
+          </li>
+          {{ end }}
+        </ul>
+        {{ else }}
+        <p class="mt-1 text-sm text-muted-foreground">None yet.</p>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+  {{ end }}
+</div>
+{{ else }}
+<p class="text-sm text-muted-foreground">No one has chatted with the bot yet. Tasks and habits appear here as people add them.</p>
+{{ end }}
+{{ end }}

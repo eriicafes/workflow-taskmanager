@@ -1,0 +1,43 @@
+<main class="mx-auto flex max-w-2xl flex-col gap-5 px-4 py-10 sm:py-14">
+  <header class="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div class="flex min-w-60 flex-1 items-center gap-4">
+      <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent text-2xl">✅</div>
+      <div class="min-w-0 flex-1">
+        <h1 class="text-2xl font-semibold tracking-tight">Task Manager</h1>
+        {{ template "bot-name" .Setup }}
+      </div>
+    </div>
+    <div class="ml-auto flex items-center gap-1">
+      {{ template "ui/button" props "href" "/?guide=1" "variant" "ghost" "size" "sm" "children" "Setup guide" }}
+      {{ template "ui/button" props "href" "/_workflow" "variant" "ghost" "size" "sm" "children" "Workflows" }}
+      <form method="post" action="/logout">
+        {{ template "ui/button" props "type" "submit" "variant" "ghost" "size" "sm" "children" "Sign out" }}
+      </form>
+    </div>
+  </header>
+
+  {{ with .Flash.Message }}
+  {{ template "ui/alert" props "variant" (or (and $.Flash.Error "destructive") "success") "children" . }}
+  {{ end }}
+
+  {{ template "ui/card" props
+    "title" "Bot" "description" "Where Telegram delivers your bot's messages."
+    "children" (tmpl "bot-card-content" .Setup)
+    "footer" (tmpl "bot-actions" .Setup)
+  }}
+  {{ template "ui/card" props
+    "title" "Access" "description" "Telegram users who can use your bot."
+    "children" (tmpl "access-card-content" .Setup)
+  }}
+  {{ template "ui/card" props
+    "title" "Tasks & habits" "description" "What each user is keeping track of."
+    "children" (tmpl "users-card-content" .)
+  }}
+</main>
+
+{{ define "bot-card-content" }}
+{{ template "bot-status" . }}
+{{ if not .Polling }}
+<div class="mt-5">{{ template "connect-form" props "setup" . }}</div>
+{{ end }}
+{{ end }}

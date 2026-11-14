@@ -1,0 +1,69 @@
+{{ define "bot-name" }}
+{{ if .Bot.Username }}
+<p class="truncate text-sm text-muted-foreground">
+  {{ .Bot.Name }} ·
+  <a class="font-medium text-primary hover:underline" href="https://t.me/{{ .Bot.Username }}" target="_blank" rel="noopener">@{{ .Bot.Username }}</a>
+</p>
+{{ else }}
+<p class="text-sm text-muted-foreground">No bot connected.</p>
+{{ end }}
+{{ end }}
+
+{{ define "bot-status" }}
+{{ with .BotError }}
+<p class="mb-4 wrap-break-word text-sm text-destructive">{{ . }}</p>
+{{ end }}
+<dl class="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2.5 text-sm">
+  <dt class="text-muted-foreground">Status</dt>
+  <dd class="font-medium {{ if or .Polling .Connected }}text-success{{ else }}text-warning{{ end }}">
+    {{ if .Polling }}● Polling locally{{ else if .Connected }}● Connected{{ else if .Webhook.URL }}● Points elsewhere{{ else }}○ Not connected{{ end }}
+  </dd>
+  {{ if not .Polling }}
+  <dt class="text-muted-foreground">Delivering to</dt>
+  <dd class="min-w-0 break-all">
+    {{ with .Webhook.URL }}<code class="font-mono text-[13px]">{{ . }}</code>{{ else }}<span class="text-muted-foreground">nowhere</span>{{ end }}
+  </dd>
+  {{ end }}
+  {{ with .LastError }}
+  <dt class="text-muted-foreground">Last error</dt>
+  <dd class="min-w-0 wrap-break-word text-destructive">{{ . }}</dd>
+  {{ end }}
+  <dt class="text-muted-foreground">Token</dt>
+  <dd class="font-mono text-[13px]">{{ .Bot.TokenHint }}</dd>
+</dl>
+{{ end }}
+
+{{/* connect-form props: setup, from (guide or empty). */}}
+{{ define "connect-form" }}
+<form method="post" action="/setup/connect" class="flex flex-col gap-2">
+  {{ with .from }}<input type="hidden" name="from" value="{{ . }}" />{{ end }}
+  {{ template "ui/label" props "for" "public_url" "children" "Public URL" "class" "sr-only" }}
+  <div class="flex flex-col gap-2 sm:flex-row">
+    {{ template "ui/input" props
+      "id" "public_url" "name" "public_url" "type" "url" "required" true
+      "value" .setup.PublicURL "placeholder" "https://taskmanager.vercel.app"
+    }}
+    {{ template "ui/button" props "type" "submit" "class" "shrink-0" "children" (or (and .setup.Connected "Reconnect") "Connect bot") }}
+  </div>
+  <p class="text-xs text-muted-foreground">
+    Telegram delivers updates to <code class="font-mono">&lt;URL&gt;/telegram</code> with a secret only it and Task Manager know.
+  </p>
+</form>
+{{ end }}
+
+{{ define "bot-actions" }}
+<div class="flex flex-1 flex-wrap items-center justify-between gap-2">
+  {{ if and (not .Polling) .Webhook.URL }}
+  <form method="post" action="/setup/disconnect" onsubmit="return confirm('Stop delivering messages to {{ .Webhook.URL }}?')">
+    {{ template "ui/button" props "type" "submit" "variant" "outline" "size" "sm" "children" "Disconnect" }}
+  </form>
+  {{ else }}<span></span>{{ end }}
+  {{ template "reset-form" . }}
+</div>
+{{ end }}
+
+{{ define "reset-form" }}
+<form method="post" action="/setup/reset" onsubmit="return confirm('Remove @{{ .Bot.Username }}? It stops receiving messages until you paste a token again. Tasks and habits stay.')">
+  {{ template "ui/button" props "type" "submit" "variant" "outline-destructive" "size" "sm" "children" "Use a different bot" }}
+</form>
+{{ end }}
