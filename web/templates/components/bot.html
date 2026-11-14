@@ -1,11 +1,11 @@
 {{ define "bot-name" }}
 {{ if .Bot.Username }}
-<p class="truncate text-sm text-muted-foreground">
+<p class="truncate text-xs text-muted-foreground sm:text-sm">
   {{ .Bot.Name }} ·
   <a class="font-medium text-primary hover:underline" href="https://t.me/{{ .Bot.Username }}" target="_blank" rel="noopener">@{{ .Bot.Username }}</a>
 </p>
 {{ else }}
-<p class="text-sm text-muted-foreground">No bot connected.</p>
+<p class="text-xs text-muted-foreground sm:text-sm">No bot connected.</p>
 {{ end }}
 {{ end }}
 

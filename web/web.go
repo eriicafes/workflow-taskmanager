@@ -102,6 +102,7 @@ var GetApp = got.TryUsing(func(c *got.Container) (*App, error) {
 func (a *App) Handler() http.Handler {
 	mux := httpx.Fallback(http.NewServeMux(), a.handleError)
 	mux.Route("POST "+TelegramWebhookPath, a.Telegram)
+	mux.Route("GET /favicon.svg", a.Favicon)
 
 	site := httpx.Fallback(httpx.Use(mux, http.NewCrossOriginProtection().Handler), a.handlePageError)
 	site.Route("GET /login", a.LoginPage)
