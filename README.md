@@ -7,7 +7,7 @@ build habits: reminders daily at set times ("meds at 8 am and 8 pm"), or every
 few hours within a window ("water every 2 hours, 9 to 9"), on every day or some
 weekdays, with Done and Skip buttons and streaks.
 
-It is built like [LoveLoop](../loveloop): a Go app on Vercel on
+It is built like [LoveLoop](https://github.com/eriicafes/loveloop): a Go app on Vercel on
 [go-workflow](https://github.com/eriicafes/go-workflow), where every
 conversation, reminder and agenda is a durable run, and the agent is a
 [`workflowai`](https://github.com/eriicafes/go-workflow/tree/main/workflowai)
