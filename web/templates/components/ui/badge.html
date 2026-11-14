@@ -6,7 +6,7 @@
 */}}
 {{ define "ui/badge" }}
 <span class="{{ clsx
-  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold"
+  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-semibold"
   (or (not .variant) (eq .variant "default")) "bg-accent text-accent-foreground"
   (eq .variant "success") "bg-success-soft text-success"
   (eq .variant "warning") "bg-warning-soft text-warning"
