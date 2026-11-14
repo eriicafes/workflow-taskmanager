@@ -383,11 +383,11 @@ func TestServesBuiltAssets(t *testing.T) {
 func TestFavicon(t *testing.T) {
 	app, _ := testApp(t)
 	b := newBrowser(t, app.Handler())
-	res := b.do("GET", "/favicon.svg", nil)
-	if res.Code != http.StatusOK || res.Header().Get("Content-Type") != "image/svg+xml" || !strings.HasPrefix(res.Body.String(), "<svg") {
+	res := b.do("GET", "/favicon.png", nil)
+	if res.Code != http.StatusOK || res.Header().Get("Content-Type") != "image/png" || !strings.HasPrefix(res.Body.String(), "\x89PNG") {
 		t.Fatalf("favicon: %d %s", res.Code, res.Header().Get("Content-Type"))
 	}
-	if body := b.page("/login"); !strings.Contains(body, `href="/favicon.svg"`) {
+	if body := b.page("/login"); !strings.Contains(body, `href="/favicon.png"`) {
 		t.Fatal("pages don't link the favicon")
 	}
 }
