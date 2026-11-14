@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/eriicafes/go-workflow"
-	"github.com/eriicafes/got"
 	"github.com/eriicafes/httpx"
 	"github.com/eriicafes/httpx/httperrors"
 	"github.com/eriicafes/httpx/session"
@@ -38,7 +37,7 @@ type App struct {
 	// Store is nil when REDIS_URL is not set, so the setup page still
 	// shows what is missing.
 	Store *store.Store
-	// Client starts and reads runs. GetApp leaves it unset: the entry point
+	// Client starts and reads runs. NewApp leaves it unset: the entry point
 	// sets it on the World it runs with.
 	Client    workflow.Client
 	Vite      *vite.Vite
@@ -67,34 +66,29 @@ type Session struct {
 // SessionDuration is how long a sign in lasts.
 const SessionDuration = 7 * 24 * time.Hour
 
-// GetVite returns Vite serving the embedded build. Local development mocks
-// it with one that loads assets from the Vite dev server.
-var GetVite = got.TryUsing(func(c *got.Container) (*vite.Vite, error) {
+// BuiltVite returns Vite serving the embedded build. Local development uses
+// one that loads assets from the Vite dev server instead.
+func BuiltVite() (*vite.Vite, error) {
 	output, err := fs.Sub(dist, "dist")
 	if err != nil {
 		return nil, err
 	}
 	return vite.New(vite.Config{Output: output})
-})
+}
 
-// GetApp returns the App configured from the environment.
-var GetApp = got.TryUsing(func(c *got.Container) (*App, error) {
-	app := &App{Password: os.Getenv("SETUP_PASSWORD")}
+// NewApp returns the App on s, which is nil when REDIS_URL is not set, with
+// assets from v and the rest configured from the environment.
+func NewApp(s *store.Store, v *vite.Vite) (*App, error) {
+	app := &App{Store: s, Vite: v, Password: os.Getenv("SETUP_PASSWORD")}
 	var err error
-	if app.Store, err = store.GetStore.From(c); err != nil && os.Getenv("REDIS_URL") != "" {
-		return nil, err
-	}
-	if app.Vite, err = GetVite.From(c); err != nil {
-		return nil, err
-	}
-	if app.Templates, err = templates.Parse(app.Vite); err != nil {
+	if app.Templates, err = templates.Parse(v); err != nil {
 		return nil, err
 	}
 	if app.Session, app.Flash, err = cookies(app.Password, os.Getenv("VERCEL") != ""); err != nil {
 		return nil, err
 	}
 	return app, nil
-})
+}
 
 // Handler returns every route. Form posts from other origins are rejected,
 // and the setup routes redirect to /login until the browser signs in.

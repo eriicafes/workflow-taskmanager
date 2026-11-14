@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/eriicafes/go-workflow/workflowai"
-	"github.com/eriicafes/got"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -59,15 +58,15 @@ func New(rdb redis.UniversalClient, prefix string) *Store {
 	return &Store{rdb: rdb, prefix: prefix}
 }
 
-// GetStore returns the Store on REDIS_URL, the Upstash Redis connection
-// string, with keys under taskmanager.
-var GetStore = got.TryUsing(func(c *got.Container) (*Store, error) {
+// Open returns the Store on REDIS_URL, the Upstash Redis connection string,
+// with keys under taskmanager.
+func Open() (*Store, error) {
 	options, err := redis.ParseURL(os.Getenv("REDIS_URL"))
 	if err != nil {
 		return nil, fmt.Errorf("REDIS_URL: %w", err)
 	}
 	return New(redis.NewClient(options), "taskmanager"), nil
-})
+}
 
 func (s *Store) key(parts ...any) string {
 	var b strings.Builder

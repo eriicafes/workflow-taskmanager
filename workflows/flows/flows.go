@@ -8,7 +8,6 @@ import (
 	"github.com/digitallysavvy/go-ai/pkg/provider"
 	"github.com/eriicafes/go-workflow"
 	"github.com/eriicafes/go-workflow/worlds"
-	"github.com/eriicafes/got"
 
 	"github.com/eriicafes/workflow-taskmanager/lib/store"
 	"github.com/eriicafes/workflow-taskmanager/lib/telegram"
@@ -23,32 +22,23 @@ type Flows struct {
 	Model provider.LanguageModel
 }
 
-// GetFlows returns Flows configured from the environment.
-var GetFlows = got.TryUsing(func(c *got.Container) (*Flows, error) {
-	s, err := store.GetStore.From(c)
-	if err != nil {
-		return nil, err
-	}
-	model, err := GetModel.From(c)
+// New returns Flows on s, with the model configured from the environment.
+func New(s *store.Store) (*Flows, error) {
+	model, err := NewModel()
 	if err != nil {
 		return nil, err
 	}
 	return &Flows{Store: s, Model: model}, nil
-})
+}
 
-// GetRunners returns the runners of Task Manager's workflows, building
-// Flows first.
-var GetRunners = got.TryUsing(func(c *got.Container) (worlds.RunnerSet, error) {
-	f, err := GetFlows.From(c)
-	if err != nil {
-		return nil, err
-	}
+// Runners returns the runners of Task Manager's workflows.
+func (f *Flows) Runners() worlds.RunnerSet {
 	return worlds.Runners(
 		workflow.Use(f.Conversation),
 		workflow.Use(f.Reminder),
 		workflow.Use(f.Agenda),
-	), nil
-})
+	)
+}
 
 // bot returns a client for the connected bot. The token is read from the
 // store on every use, so a bot changed on the setup page takes effect at once.

@@ -26,7 +26,6 @@ import (
 
 	"github.com/eriicafes/go-workflow"
 	localworld "github.com/eriicafes/go-workflow/worlds/local"
-	"github.com/eriicafes/got"
 	"github.com/eriicafes/httpx"
 	"github.com/eriicafes/tmpl/vite"
 
@@ -43,11 +42,18 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	c := got.New()
-	runners, err := flows.GetRunners.From(c)
+	if !flows.HasGatewayToken() {
+		log.Fatal("set AI_GATEWAY_API_KEY, or run vercel env pull for VERCEL_OIDC_TOKEN")
+	}
+	s, err := store.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
+	f, err := flows.New(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+	runners := f.Runners()
 
 	world, err := localworld.Open(localworld.Config{
 		Dir:     ".workflows",
@@ -61,15 +67,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var v *vite.Vite
 	if *dev {
-		v, err := vite.New(vite.Config{Dev: true})
-		if err != nil {
-			log.Fatal(err)
-		}
-		got.Mock2(c, web.GetVite, v, nil)
+		v, err = vite.New(vite.Config{Dev: true})
+	} else {
+		v, err = web.BuiltVite()
 	}
-
-	app, err := web.GetApp.From(c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	app, err := web.NewApp(s, v)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,9 +87,8 @@ func main() {
 	app.Workflow = localworld.HTTP(world)
 	app.Polling = true
 
-	// Restart the agenda chains a new or wiped .workflows lost. app.Store is
-	// not nil here: building the runners above already required the store.
-	users, err := app.Store.Users(ctx)
+	// Restart the agenda chains a new or wiped .workflows lost.
+	users, err := s.Users(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

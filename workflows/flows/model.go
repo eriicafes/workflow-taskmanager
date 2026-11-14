@@ -8,7 +8,6 @@ import (
 
 	"github.com/digitallysavvy/go-ai/pkg/provider"
 	"github.com/digitallysavvy/go-ai/pkg/providers/openai"
-	"github.com/eriicafes/got"
 )
 
 // gatewayURL is the AI Gateway's OpenAI-compatible API. go-ai's gateway
@@ -19,13 +18,12 @@ import (
 // includes https://github.com/digitallysavvy/go-ai/pull/86.
 const gatewayURL = "https://ai-gateway.vercel.sh/v1"
 
-// GetModel returns the model named by MODEL through the AI Gateway's
+// NewModel returns the model named by MODEL through the AI Gateway's
 // OpenAI-compatible Chat Completions API, which authenticates with
-// AI_GATEWAY_API_KEY or the deployment's OIDC token.
-var GetModel = got.TryUsing(func(c *got.Container) (provider.LanguageModel, error) {
-	if gatewayToken() == "" {
-		return nil, errors.New("set AI_GATEWAY_API_KEY, or deploy on Vercel or run vercel env pull for VERCEL_OIDC_TOKEN")
-	}
+// AI_GATEWAY_API_KEY or the deployment's OIDC token. The token is read on
+// every call, not here: on Vercel it arrives with each request, so it may
+// not be set yet when the model is built.
+func NewModel() (provider.LanguageModel, error) {
 	gw := openai.New(openai.Config{
 		Name:    "gateway",
 		BaseURL: gatewayURL,
@@ -34,7 +32,13 @@ var GetModel = got.TryUsing(func(c *got.Container) (provider.LanguageModel, erro
 		HTTPClient: &http.Client{Transport: gatewayAuth{next: http.DefaultTransport}},
 	})
 	return gw.ChatModel(cmp.Or(os.Getenv("MODEL"), "openai/gpt-5-mini"))
-})
+}
+
+// errNoGatewayToken is returned by a model call when there is no token.
+var errNoGatewayToken = errors.New("set AI_GATEWAY_API_KEY, or deploy on Vercel or run vercel env pull for VERCEL_OIDC_TOKEN")
+
+// HasGatewayToken reports whether a model call has a token to send.
+func HasGatewayToken() bool { return gatewayToken() != "" }
 
 // gatewayToken returns AI_GATEWAY_API_KEY, or else the OIDC token Vercel
 // rotates, read anew on every call.
@@ -47,7 +51,14 @@ func gatewayToken() string {
 type gatewayAuth struct{ next http.RoundTripper }
 
 func (t gatewayAuth) RoundTrip(request *http.Request) (*http.Response, error) {
+	token := gatewayToken()
+	if token == "" {
+		if request.Body != nil {
+			request.Body.Close()
+		}
+		return nil, errNoGatewayToken
+	}
 	request = request.Clone(request.Context())
-	request.Header.Set("Authorization", "Bearer "+gatewayToken())
+	request.Header.Set("Authorization", "Bearer "+token)
 	return t.next.RoundTrip(request)
 }
