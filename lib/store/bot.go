@@ -59,6 +59,25 @@ func (s *Store) DeleteBot(ctx context.Context) error {
 	return s.rdb.Del(ctx, s.key("bot")).Err()
 }
 
+// SetDelivered records when Telegram last delivered an update to the
+// webhook, so the setup page can tell a delivery error from before it is
+// stale: Telegram keeps reporting its last error after deliveries recover.
+func (s *Store) SetDelivered(ctx context.Context, at time.Time) error {
+	return s.rdb.Set(ctx, s.key("delivered"), at.Unix(), 0).Err()
+}
+
+// Delivered returns when Telegram last delivered an update to the webhook,
+// or the zero time if it never has.
+func (s *Store) Delivered(ctx context.Context) (time.Time, error) {
+	unix, err := s.rdb.Get(ctx, s.key("delivered")).Int64()
+	if errors.Is(err, redis.Nil) {
+		return time.Time{}, nil
+	} else if err != nil {
+		return time.Time{}, err
+	}
+	return time.Unix(unix, 0), nil
+}
+
 // AllowedUsers returns the Telegram user IDs allowed to use the bot.
 func (s *Store) AllowedUsers(ctx context.Context) ([]int64, error) {
 	members, err := s.rdb.SMembers(ctx, s.key("allowed")).Result()

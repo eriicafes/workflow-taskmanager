@@ -44,6 +44,8 @@ func (a *App) Telegram(w http.ResponseWriter, r *http.Request) error {
 	if err := a.HandleUpdate(r.Context(), update); err != nil {
 		return httpx.InternalError(fmt.Errorf("telegram update %d: %w", update.UpdateID, err), "failed")
 	}
+	// Best effort: it only hides delivery errors Telegram still reports.
+	_ = a.Store.SetDelivered(r.Context(), time.Now())
 	w.WriteHeader(http.StatusOK)
 	return nil
 }

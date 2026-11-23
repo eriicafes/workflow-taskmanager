@@ -296,11 +296,23 @@ func TestSetupTokenReconnectsWebhook(t *testing.T) {
 // A connected bot whose deliveries fail shows the error and a way to
 // reconnect, even once the guide is done.
 func TestGuideShowsDeliveryError(t *testing.T) {
-	app, fake, _ := connected(t)
+	app, fake, secret := connected(t)
 	b := newBrowser(t, app.Handler())
 	wantRedirect(t, b.do("POST", "/login", url.Values{"password": {"hunter2"}}), "/")
 	fake.webhook, fake.lastErr = "https://tasks.example.com/telegram", "Wrong response from the webhook: 401 Unauthorized"
 	b.page("/?guide=1", "4 of 4 done", "Last delivery error: Wrong response from the webhook: 401 Unauthorized", "Reconnect")
+
+	// Once an update gets through, Telegram still reports the error, but
+	// the page no longer shows it.
+	if code := update(t, app, secret, message(42, "/id")); code != http.StatusOK {
+		t.Fatalf("update: %d", code)
+	}
+	if body := b.page("/?guide=1", "4 of 4 done"); strings.Contains(body, "401 Unauthorized") {
+		t.Fatal("the guide shows an error from before the last delivery")
+	}
+	if body := b.page("/", "● Connected"); strings.Contains(body, "401 Unauthorized") {
+		t.Fatal("the dashboard shows an error from before the last delivery")
+	}
 }
 
 // connected returns an app set up for user 42.

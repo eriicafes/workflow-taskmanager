@@ -64,7 +64,10 @@ func (a *App) setup(ctx context.Context, publicURL string) pages.Setup {
 			} else {
 				setup.Webhook = info
 				setup.Connected = info.URL != "" && info.URL == setup.WebhookURL
-				if info.LastErrorMessage != "" {
+				// Telegram reports its last error even once deliveries
+				// recover, so one from before the last delivery is stale.
+				delivered, _ := a.Store.Delivered(ctx)
+				if info.LastErrorMessage != "" && info.LastErrorDate > delivered.Unix() {
 					setup.LastError = info.LastErrorMessage + " (" + time.Unix(info.LastErrorDate, 0).UTC().Format("2 Jan 15:04 UTC") + ")"
 				}
 			}
