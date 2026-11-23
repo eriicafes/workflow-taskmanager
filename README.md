@@ -15,8 +15,8 @@ conversation, reminder and agenda is a durable run, and the agent is a
 
 ## Setting up the bot
 
-There is no bot token in the environment. Sign in to the deployment's setup
-page and it guides you through four steps, showing each as it's done:
+Sign in to the deployment's setup page and it guides you through four steps,
+showing each as it's done:
 
 1. **Create a bot with @BotFather**: `/newbot`, a name, a username ending in
    `bot`.
@@ -60,17 +60,13 @@ Every message is pushed to the user's mailbox in Redis, then wakes their
 `Conversation` run through a hook, or starts one when none is listening. A
 message that arrives while the agent is replying waits its turn and is
 answered with that context, and mail that arrives as a run ends is picked up
-by the next. Every run starts on the latest deployment through
-`workflows.Start`, and no run sleeps longer than six days before starting the
-next, so runs move to new deployments within days and none is stranded on a
-deleted deployment.
+by the next. Every run starts on the latest deployment, and no run sleeps
+longer than six days before starting the next, so runs move to new
+deployments within days and none is stranded on a deleted deployment.
 
 Data lives in Redis under `taskmanager:*`: the bot, allowed users and access
 requests, and per user their settings, tasks, habits, and the last messages of
-their conversation. Done tasks are kept up to 30 per user. The workflow World
-keeps runs in Vercel's managed workflow storage, which needs no setup and also
-shows the runs in Vercel's dashboard; locally, `cmd/local` keeps them in a
-SQLite database in `.workflows`.
+their conversation. Done tasks are kept up to 30 per user.
 
 ```
 api/          Vercel functions: index (every public route) and queue (workflow consumer)

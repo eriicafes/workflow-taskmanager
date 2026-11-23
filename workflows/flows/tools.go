@@ -127,7 +127,7 @@ func (u userTools) scheduleTask(ctx context.Context, task store.Task) error {
 	if task.RemindAt.IsZero() || task.Done {
 		return nil
 	}
-	_, err := workflows.Start(ctx, workflows.Reminder{ChatID: u.ChatID, Kind: workflows.KindTask, ItemID: task.ID, At: task.RemindAt, Version: task.Version})
+	_, err := workflows.StartOnLatest(ctx, workflows.Reminder{ChatID: u.ChatID, Kind: workflows.KindTask, ItemID: task.ID, At: task.RemindAt, Version: task.Version})
 	return err
 }
 
@@ -312,7 +312,7 @@ func (u userTools) scheduleHabit(ctx context.Context, habit store.Habit) error {
 	if habit.NextAt.IsZero() {
 		return nil
 	}
-	_, err := workflows.Start(ctx, workflows.Reminder{ChatID: u.ChatID, Kind: workflows.KindHabit, ItemID: habit.ID, At: habit.NextAt, Version: habit.Version})
+	_, err := workflows.StartOnLatest(ctx, workflows.Reminder{ChatID: u.ChatID, Kind: workflows.KindHabit, ItemID: habit.ID, At: habit.NextAt, Version: habit.Version})
 	return err
 }
 
@@ -445,7 +445,7 @@ func (u userTools) updateSettings(ctx context.Context, in settingsInput) (store.
 		// The new chain replaces the old one, which ends when it sees it is
 		// no longer the user's current chain.
 		now := workflow.Now(ctx)
-		run, err := workflows.Start(ctx, workflows.Agenda{ChatID: u.ChatID, At: agenda.Next(change.User.AgendaHour, change.User.Location(), now)})
+		run, err := workflows.StartOnLatest(ctx, workflows.Agenda{ChatID: u.ChatID, At: agenda.Next(change.User.AgendaHour, change.User.Location(), now)})
 		if err != nil {
 			return store.User{}, err
 		}

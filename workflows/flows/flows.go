@@ -7,7 +7,7 @@ import (
 
 	"github.com/digitallysavvy/go-ai/pkg/provider"
 	"github.com/eriicafes/go-workflow"
-	"github.com/eriicafes/go-workflow/worlds/core"
+	"github.com/eriicafes/go-workflow/worlds"
 
 	"github.com/eriicafes/workflow-taskmanager/lib/store"
 	"github.com/eriicafes/workflow-taskmanager/lib/telegram"
@@ -32,8 +32,8 @@ func New(s *store.Store) (*Flows, error) {
 }
 
 // Runners returns the runners of Task Manager's workflows.
-func (f *Flows) Runners() core.RunnerSet {
-	return core.Runners(
+func (f *Flows) Runners() worlds.RunnerSet {
+	return worlds.Runners(
 		workflow.Use(f.Conversation),
 		workflow.Use(f.Reminder),
 		workflow.Use(f.Agenda),

@@ -6,7 +6,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.40.0
 	github.com/digitallysavvy/go-ai v0.5.2
 	github.com/eriicafes/go-dev v0.4.0
-	github.com/eriicafes/go-workflow v0.9.0
+	github.com/eriicafes/go-workflow v0.10.0
 	github.com/eriicafes/httpx v0.5.1
 	github.com/eriicafes/tmpl v0.16.0
 	github.com/redis/go-redis/v9 v9.7.3

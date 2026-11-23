@@ -25,8 +25,8 @@ const maxSleep = 6 * 24 * time.Hour
 // input.At for at most maxSleep; if the reminder isn't due yet it starts the
 // next run toward the same time and ends. Once due, it sends the reminder,
 // and for a habit starts the run for its next reminder. Each run lasts days
-// at most, and each starts on the latest deployment through workflows.Start,
-// so chains move to new deployments instead of outliving their first one.
+// at most, and each starts with workflows.StartOnLatest, so chains move to
+// new deployments instead of outliving their first one.
 //
 // A run whose task or habit is gone, done, or rescheduled under a newer
 // Version ends without sending, so nothing needs cancelling.
@@ -44,7 +44,7 @@ func (f *Flows) Reminder(ctx context.Context, input workflows.Reminder) (workflo
 		if err != nil || !current {
 			return result, err
 		}
-		_, err = workflows.Start(ctx, input)
+		_, err = workflows.StartOnLatest(ctx, input)
 		return result, err
 	}
 	fired, err := workflow.Step(ctx, f.fireReminder, input)
@@ -57,7 +57,7 @@ func (f *Flows) Reminder(ctx context.Context, input workflows.Reminder) (workflo
 	}
 	next := input
 	next.At = fired.Next
-	_, err = workflows.Start(ctx, next)
+	_, err = workflows.StartOnLatest(ctx, next)
 	return result, err
 }
 

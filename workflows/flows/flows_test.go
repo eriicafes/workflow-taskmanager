@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/eriicafes/go-workflow"
-	"github.com/eriicafes/go-workflow/worlds/core"
+	"github.com/eriicafes/go-workflow/worlds"
 	localworld "github.com/eriicafes/go-workflow/worlds/local"
 
 	"github.com/eriicafes/workflow-taskmanager/lib/store"
@@ -66,7 +66,7 @@ func testFlows(t *testing.T) (*Flows, context.Context, *sentMessages) {
 
 	f := &Flows{Store: storetest.New(t)}
 	world, err := localworld.Open(localworld.Config{Dir: t.TempDir(), BaseURL: "http://localhost/v1/workflow"},
-		core.Runners(workflow.Use(f.Reminder), workflow.Use(f.Agenda)))
+		worlds.Runners(workflow.Use(f.Reminder), workflow.Use(f.Agenda)))
 	if err != nil {
 		t.Fatal(err)
 	}
