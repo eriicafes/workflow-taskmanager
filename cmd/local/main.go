@@ -63,7 +63,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer world.Close()
-	if err := prepare(ctx, world); err != nil {
+	if err := world.Prepare(ctx); err != nil {
 		log.Fatal(err)
 	}
 
@@ -102,19 +102,6 @@ func main() {
 	log.Printf("Task Manager setup page at http://localhost:%s", port)
 	if err := httpx.ListenAndServe("localhost:"+port, app.Handler(), nil); err != nil {
 		log.Print(err)
-	}
-}
-
-// prepare prepares world, waiting while a previous process that cmd/dev is
-// replacing still holds .workflows.
-func prepare(ctx context.Context, world *localworld.World) error {
-	deadline := time.Now().Add(15 * time.Second)
-	for {
-		err := world.Prepare(ctx)
-		if !errors.Is(err, localworld.ErrInUse) || time.Now().After(deadline) {
-			return err
-		}
-		time.Sleep(250 * time.Millisecond)
 	}
 }
 

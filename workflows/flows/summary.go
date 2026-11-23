@@ -68,10 +68,7 @@ func (f *Flows) compactHistory(ctx context.Context, chatID int64) error {
 	if text == "" {
 		return nil
 	}
-	now, err := workflow.Now(ctx)
-	if err != nil {
-		return err
-	}
+	now := workflow.Now(ctx)
 	_, err = workflow.Step(ctx, f.saveCompaction, compaction{
 		ChatID:  chatID,
 		Count:   plan.Count,

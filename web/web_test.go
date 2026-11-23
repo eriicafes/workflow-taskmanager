@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/eriicafes/go-workflow"
-	"github.com/eriicafes/go-workflow/worlds"
+	"github.com/eriicafes/go-workflow/worlds/core"
 	localworld "github.com/eriicafes/go-workflow/worlds/local"
 	"github.com/eriicafes/httpx/httperrors"
 	"github.com/eriicafes/tmpl/vite"
@@ -101,7 +101,7 @@ func testApp(t *testing.T) (*App, *fakeTelegram) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	world, err := localworld.Open(localworld.Config{Dir: t.TempDir(), BaseURL: "http://localhost/v1/workflow"}, worlds.Runners())
+	world, err := localworld.Open(localworld.Config{Dir: t.TempDir(), BaseURL: "http://localhost/v1/workflow"}, core.Runners())
 	if err != nil {
 		t.Fatal(err)
 	}

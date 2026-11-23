@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/eriicafes/go-workflow"
-	"github.com/eriicafes/go-workflow/worlds"
+	"github.com/eriicafes/go-workflow/worlds/core"
 	localworld "github.com/eriicafes/go-workflow/worlds/local"
 
 	"github.com/eriicafes/workflow-taskmanager/lib/store"
@@ -66,7 +66,7 @@ func testFlows(t *testing.T) (*Flows, context.Context, *sentMessages) {
 
 	f := &Flows{Store: storetest.New(t)}
 	world, err := localworld.Open(localworld.Config{Dir: t.TempDir(), BaseURL: "http://localhost/v1/workflow"},
-		worlds.Runners(workflow.Use(f.Reminder), workflow.Use(f.Agenda)))
+		core.Runners(workflow.Use(f.Reminder), workflow.Use(f.Agenda)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +172,9 @@ func TestAgendaSendsAndYields(t *testing.T) {
 		t.Fatal("an unrecorded chain sent the agenda")
 	}
 
-	run, err = workflow.Start(ctx, workflows.Agenda{ChatID: 1, At: time.Now()})
+	// The app starts an agenda run ahead of its time and records it while
+	// it sleeps, so it is the current chain once it wakes.
+	run, err = workflow.Start(ctx, workflows.Agenda{ChatID: 1, At: time.Now().Add(time.Second)})
 	if err != nil {
 		t.Fatal(err)
 	}

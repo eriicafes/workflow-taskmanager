@@ -1,8 +1,6 @@
 package workflows
 
 import (
-	"cmp"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -14,15 +12,11 @@ import (
 const DefaultTopic = "taskmanager-workflow"
 
 // NewWorld returns the Vercel World configured from the environment. It
-// shares REDIS_URL with the store, over TCP: Vercel keeps Go function
-// instances warm, so the connection pool outlives a request. Clients are
-// built from it with workflow.NewClient.
+// keeps runs in Vercel's managed workflow storage and delivers them through
+// Vercel Queues in the run's region, both authenticated with the deployment's
+// OIDC token. Clients are built from it with workflow.NewClient.
 func NewWorld() (*vercelworld.World, error) {
-	config := vercelworld.Config{
-		RedisURL: os.Getenv("REDIS_URL"),
-		QueueURL: fmt.Sprintf("https://%s.vercel-queue.com/api/v3", cmp.Or(os.Getenv("VERCEL_REGION"), "iad1")),
-		Topic:    DefaultTopic,
-	}
+	config := vercelworld.Config{Topic: DefaultTopic}
 	if os.Getenv("VERCEL_PROJECT_PRODUCTION_URL") != "" {
 		config.BaseURL = "https://" + os.Getenv("VERCEL_PROJECT_PRODUCTION_URL") + "/v1/workflow"
 	}

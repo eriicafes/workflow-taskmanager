@@ -16,7 +16,7 @@
     "vite": "^8.0.0"
   },
   "dependencies": {
-    "@workflow/web": "5.0.7",
-    "go-workflow": "0.6.0"
+    "@workflow/web": "5.3.1",
+    "go-workflow": "0.9.0"
   }
 }

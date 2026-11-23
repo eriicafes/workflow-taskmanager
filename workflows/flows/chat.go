@@ -20,10 +20,7 @@ func (f *Flows) chatTurn(ctx context.Context, chatID int64, texts []string) erro
 	for i, text := range texts {
 		turn[i] = userMessage(text)
 	}
-	now, err := workflow.Now(ctx)
-	if err != nil {
-		return err
-	}
+	now := workflow.Now(ctx)
 	result, err := f.newAgent(st, now).Generate(ctx, workflowai.CallOptions{
 		Messages: append(slices.Clone(st.History), turn...),
 	})

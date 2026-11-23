@@ -1,24 +1,31 @@
 // Package workflows declares Task Manager's workflow types. Handlers start
 // runs of them without importing their runners in workflows/flows.
 //
-// Every workflow here embeds workflow.StartOnLatest: nothing waits on their
-// output, and each either ends within minutes or starts its own next run
-// within days, so new runs start on the latest deployment and no run outlives
-// Vercel's deployment retention.
+// Start every run of them with Start: nothing waits on their output, and
+// each either ends within minutes or starts its own next run within days, so
+// new runs start on the latest deployment and no run outlives Vercel's
+// deployment retention.
 package workflows
 
 import (
+	"context"
 	"time"
 
 	"github.com/eriicafes/go-workflow"
+	"github.com/eriicafes/go-workflow/worlds"
 )
+
+// Start starts a run of input on the World's latest deployment. ctx must
+// carry a workflow Client or belong to a run.
+func Start[In worlds.Workflow[Out], Out any](ctx context.Context, input In) (*workflow.Run[Out], error) {
+	return workflow.Start(ctx, input, workflow.StartOptions{Deployment: workflow.LatestDeployment})
+}
 
 // Conversation answers a user's mailbox in order. One runs per user at a
 // time, and it ends once the mailbox stays empty for a while. Use Deliver
 // rather than starting it directly.
 type Conversation struct {
 	workflow.Struct[ConversationResult]
-	workflow.StartOnLatest
 	ChatID int64 `json:"chatId"`
 }
 
@@ -42,7 +49,6 @@ const (
 // rescheduling and deleting cancel reminders.
 type Reminder struct {
 	workflow.Struct[ReminderResult]
-	workflow.StartOnLatest
 	ChatID int64 `json:"chatId"`
 	// Kind is KindTask or KindHabit, and ItemID the task's or habit's ID.
 	Kind    string    `json:"kind"`
@@ -59,7 +65,6 @@ type ReminderResult struct {
 // then starts the run for the next day.
 type Agenda struct {
 	workflow.Struct[AgendaResult]
-	workflow.StartOnLatest
 	ChatID int64     `json:"chatId"`
 	At     time.Time `json:"at"`
 }

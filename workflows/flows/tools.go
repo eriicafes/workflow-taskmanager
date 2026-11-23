@@ -74,10 +74,8 @@ type taskInput struct {
 
 // addTask saves a new task and starts its reminder's run.
 func (u userTools) addTask(ctx context.Context, in taskInput) (taskView, error) {
-	now, err := workflow.Now(ctx)
-	if err != nil {
-		return taskView{}, err
-	}
+	now := workflow.Now(ctx)
+	var err error
 	task := store.Task{Title: strings.TrimSpace(in.Title), Notes: strings.TrimSpace(in.Notes), CreatedAt: now}
 	if task.Title == "" {
 		return taskView{}, errors.New("title is required")
@@ -129,7 +127,7 @@ func (u userTools) scheduleTask(ctx context.Context, task store.Task) error {
 	if task.RemindAt.IsZero() || task.Done {
 		return nil
 	}
-	_, err := workflow.Start(ctx, workflows.Reminder{ChatID: u.ChatID, Kind: workflows.KindTask, ItemID: task.ID, At: task.RemindAt, Version: task.Version})
+	_, err := workflows.Start(ctx, workflows.Reminder{ChatID: u.ChatID, Kind: workflows.KindTask, ItemID: task.ID, At: task.RemindAt, Version: task.Version})
 	return err
 }
 
@@ -156,10 +154,7 @@ type taskEdit struct {
 
 // updateTask changes a task, and reschedules its reminder when that changed.
 func (u userTools) updateTask(ctx context.Context, in taskUpdate) (taskView, error) {
-	now, err := workflow.Now(ctx)
-	if err != nil {
-		return taskView{}, err
-	}
+	now := workflow.Now(ctx)
 	edit := taskEdit{ID: in.ID, Title: strings.TrimSpace(in.Title), Notes: strings.TrimSpace(in.Notes), Done: in.Done, Now: now}
 	switch in.Due {
 	case "":
@@ -278,10 +273,8 @@ func (in habitInput) schedule() (store.Schedule, error) {
 
 // addHabit saves a new habit and starts the run for its first reminder.
 func (u userTools) addHabit(ctx context.Context, in habitInput) (habitView, error) {
-	now, err := workflow.Now(ctx)
-	if err != nil {
-		return habitView{}, err
-	}
+	now := workflow.Now(ctx)
+	var err error
 	habit := store.Habit{Name: strings.TrimSpace(in.Name), CreatedAt: now, Version: 1}
 	if habit.Name == "" {
 		return habitView{}, errors.New("name is required")
@@ -319,7 +312,7 @@ func (u userTools) scheduleHabit(ctx context.Context, habit store.Habit) error {
 	if habit.NextAt.IsZero() {
 		return nil
 	}
-	_, err := workflow.Start(ctx, workflows.Reminder{ChatID: u.ChatID, Kind: workflows.KindHabit, ItemID: habit.ID, At: habit.NextAt, Version: habit.Version})
+	_, err := workflows.Start(ctx, workflows.Reminder{ChatID: u.ChatID, Kind: workflows.KindHabit, ItemID: habit.ID, At: habit.NextAt, Version: habit.Version})
 	return err
 }
 
@@ -338,10 +331,7 @@ type habitUpdate struct {
 // updateHabit renames a habit or replaces its schedule, rescheduling its
 // reminders when the schedule changed.
 func (u userTools) updateHabit(ctx context.Context, in habitUpdate) (habitView, error) {
-	now, err := workflow.Now(ctx)
-	if err != nil {
-		return habitView{}, err
-	}
+	now := workflow.Now(ctx)
 	edit := habitEdit{ID: in.ID, Name: strings.TrimSpace(in.Name), Now: now}
 	if len(in.Times) > 0 || in.EveryHours > 0 || len(in.Days) > 0 {
 		schedule, err := habitInput{Times: in.Times, EveryHours: in.EveryHours, FromHour: in.FromHour, ToHour: in.ToHour, Days: in.Days}.schedule()
@@ -454,11 +444,8 @@ func (u userTools) updateSettings(ctx context.Context, in settingsInput) (store.
 	if change.AgendaMoved {
 		// The new chain replaces the old one, which ends when it sees it is
 		// no longer the user's current chain.
-		now, err := workflow.Now(ctx)
-		if err != nil {
-			return store.User{}, err
-		}
-		run, err := workflow.Start(ctx, workflows.Agenda{ChatID: u.ChatID, At: agenda.Next(change.User.AgendaHour, change.User.Location(), now)})
+		now := workflow.Now(ctx)
+		run, err := workflows.Start(ctx, workflows.Agenda{ChatID: u.ChatID, At: agenda.Next(change.User.AgendaHour, change.User.Location(), now)})
 		if err != nil {
 			return store.User{}, err
 		}

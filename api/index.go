@@ -42,7 +42,7 @@ func newIndex() (http.Handler, error) {
 		return nil, err
 	}
 	app.Client = workflow.NewClient(world)
-	app.Workflow = vercelworld.HTTP(world, worlds.WithRPCToken(os.Getenv("WORKFLOW_HTTP_TOKEN")))
+	app.Workflow = vercelworld.HTTP(world, worlds.WithClientToken(os.Getenv("WORKFLOW_HTTP_TOKEN")))
 	return app.Handler(), nil
 }
 

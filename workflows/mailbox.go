@@ -27,10 +27,10 @@ func Deliver(ctx context.Context, s *store.Store, chatID int64, mail store.Mail)
 		return err
 	}
 	err := workflow.ResumeHook(ctx, MailboxToken(chatID), struct{}{})
-	if !errors.Is(err, workflow.ErrHookNotFound) {
+	if notFound := new(workflow.HookNotFoundError); !errors.As(err, &notFound) {
 		return err
 	}
-	_, err = workflow.Start(ctx, Conversation{ChatID: chatID})
+	_, err = Start(ctx, Conversation{ChatID: chatID})
 	return err
 }
 

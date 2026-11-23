@@ -20,10 +20,7 @@ import (
 func (f *Flows) Agenda(ctx context.Context, input workflows.Agenda) (workflows.AgendaResult, error) {
 	var result workflows.AgendaResult
 	self := workflow.GetWorkflowMetadata(ctx).RunID
-	now, err := workflow.Now(ctx)
-	if err != nil {
-		return result, err
-	}
+	now := workflow.Now(ctx)
 	if wait := input.At.Sub(now); wait > 0 {
 		if err := workflow.Sleep(ctx, wait); err != nil {
 			return result, err
@@ -34,7 +31,7 @@ func (f *Flows) Agenda(ctx context.Context, input workflows.Agenda) (workflows.A
 		return result, err
 	}
 	result.Sent = sent.Sent
-	run, err := workflow.Start(ctx, workflows.Agenda{ChatID: input.ChatID, At: sent.Next})
+	run, err := workflows.Start(ctx, workflows.Agenda{ChatID: input.ChatID, At: sent.Next})
 	if err != nil {
 		return result, err
 	}
