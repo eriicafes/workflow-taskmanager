@@ -30,6 +30,9 @@ var commands = []telegram.BotCommand{
 // SetupToken serves POST /setup/token. It checks the token from @BotFather
 // with Telegram, saves it with a new webhook secret, and sets the bot's
 // command menu. A bot replaced by another stops getting webhook deliveries.
+// A bot whose webhook is already set, as after its saved secret was lost,
+// keeps its webhook with the new secret, which Telegram would otherwise
+// keep sending the old one of.
 func (a *App) SetupToken(w http.ResponseWriter, r *http.Request) error {
 	if a.Store == nil {
 		return a.fail(w, r, errNoStore.Error())
@@ -58,6 +61,13 @@ func (a *App) SetupToken(w http.ResponseWriter, r *http.Request) error {
 	}
 	if err := a.Store.SaveBot(ctx, bot); err != nil {
 		return err
+	}
+	if saved, err := a.Store.Bot(ctx); err == nil && saved.WebhookSecret != old.WebhookSecret && !a.Polling {
+		if info, err := client.GetWebhookInfo(ctx); err == nil && info.URL != "" {
+			if err := client.SetWebhook(ctx, info.URL, saved.WebhookSecret); err != nil {
+				return a.fail(w, r, "The token is saved, but reconnecting its webhook failed: "+err.Error())
+			}
+		}
 	}
 	if err := client.SetMyCommands(ctx, commands); err != nil {
 		return a.fail(w, r, "The token is saved, but setting the bot's commands failed: "+err.Error())

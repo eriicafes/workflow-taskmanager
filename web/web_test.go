@@ -278,6 +278,20 @@ func TestSetupGuide(t *testing.T) {
 	b.page("/", "Paste your bot&#39;s token", "1 of 4 done")
 }
 
+// A bot whose saved secret was lost, as when its store is wiped, gets its
+// webhook back with the new secret when its token is pasted again.
+func TestSetupTokenReconnectsWebhook(t *testing.T) {
+	app, fake := testApp(t)
+	b := newBrowser(t, app.Handler())
+	wantRedirect(t, b.do("POST", "/login", url.Values{"password": {"hunter2"}}), "/")
+	fake.webhook, fake.secret = "https://tasks.example.com/telegram", "lost"
+	wantRedirect(t, b.do("POST", "/setup/token", url.Values{"token": {testToken}, "from": {"guide"}}), "/?guide=1")
+	saved, _ := app.Store.Bot(t.Context())
+	if fake.webhook != "https://tasks.example.com/telegram" || fake.secret != saved.WebhookSecret {
+		t.Fatalf("webhook %q with secret %q, saved %q", fake.webhook, fake.secret, saved.WebhookSecret)
+	}
+}
+
 // connected returns an app set up for user 42.
 func connected(t *testing.T) (*App, *fakeTelegram, string) {
 	t.Helper()
