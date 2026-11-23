@@ -32,6 +32,7 @@ type fakeTelegram struct {
 	mu      sync.Mutex
 	webhook string
 	secret  string
+	lastErr string
 	sent    []string
 	edited  []string
 	answers []string
@@ -52,7 +53,7 @@ func (f *fakeTelegram) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "getMe":
 		result = map[string]any{"id": 123456, "is_bot": true, "first_name": "My Tasks", "username": "tasks_bot"}
 	case "getWebhookInfo":
-		result = map[string]any{"url": f.webhook, "pending_update_count": 0}
+		result = map[string]any{"url": f.webhook, "pending_update_count": 0, "last_error_message": f.lastErr, "last_error_date": 1}
 	case "setWebhook":
 		f.webhook, f.secret = params["url"].(string), params["secret_token"].(string)
 	case "deleteWebhook":
@@ -290,6 +291,16 @@ func TestSetupTokenReconnectsWebhook(t *testing.T) {
 	if fake.webhook != "https://tasks.example.com/telegram" || fake.secret != saved.WebhookSecret {
 		t.Fatalf("webhook %q with secret %q, saved %q", fake.webhook, fake.secret, saved.WebhookSecret)
 	}
+}
+
+// A connected bot whose deliveries fail shows the error and a way to
+// reconnect, even once the guide is done.
+func TestGuideShowsDeliveryError(t *testing.T) {
+	app, fake, _ := connected(t)
+	b := newBrowser(t, app.Handler())
+	wantRedirect(t, b.do("POST", "/login", url.Values{"password": {"hunter2"}}), "/")
+	fake.webhook, fake.lastErr = "https://tasks.example.com/telegram", "Wrong response from the webhook: 401 Unauthorized"
+	b.page("/?guide=1", "4 of 4 done", "Last delivery error: Wrong response from the webhook: 401 Unauthorized", "Reconnect")
 }
 
 // connected returns an app set up for user 42.
