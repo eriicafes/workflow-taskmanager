@@ -16,8 +16,8 @@ github.com/dustin/go-humanize v1.1.0 h1:dbKTrvD0klcbBV/h4AWJdMuZogJACoMlvWIWZ5b2
 github.com/dustin/go-humanize v1.1.0/go.mod h1:hc1CvRkJMsgxqjmjMQF3QNRAZBwY8AXBAzKYoSX9sFI=
 github.com/eriicafes/go-dev v0.4.0 h1:9nGPx2o4OXvhspp+Va2x/B5yexeOI4lRocfeti+SQ8Y=
 github.com/eriicafes/go-dev v0.4.0/go.mod h1:eE3uJlyIVYx5XrWWkgK2dEZFWkUbOiwiuxg05UTuIUM=
-github.com/eriicafes/go-workflow v0.11.0 h1:dgh1wdLls8Qv/kpdQb4RqYQnpSAMiAhT9ltMswZClj4=
-github.com/eriicafes/go-workflow v0.11.0/go.mod h1:b/HGxLA9XKeCtr/mQwi341vioqI5Y3nFqAzac1KD9ug=
+github.com/eriicafes/go-workflow v0.11.1 h1:nLwc7z8vTi9KpGu0wvYP46r8CV4hUjkoos4dgHXn+HA=
+github.com/eriicafes/go-workflow v0.11.1/go.mod h1:b/HGxLA9XKeCtr/mQwi341vioqI5Y3nFqAzac1KD9ug=
 github.com/eriicafes/httpx v0.5.1 h1:xvzgjdLu6ARw111TCullYUxmLpmwVxblRuLXZSVMJ0c=
 github.com/eriicafes/httpx v0.5.1/go.mod h1:aBxfPwHB715UNrn4UTS4jSeox46Bml0fPNZ7+JYTmZI=
 github.com/eriicafes/tmpl v0.16.0 h1:CpV2x7M3ITXiM4nRCdCY1hPaQxKwvtamgs/lsOml1v4=
