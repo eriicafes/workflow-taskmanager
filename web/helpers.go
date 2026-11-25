@@ -117,7 +117,7 @@ func (a *App) EnsureAgenda(ctx context.Context, chatID int64) error {
 	if err != nil {
 		return errors.Join(err, a.Store.Release(ctx, key))
 	}
-	run, err := workflows.StartOnLatest(ctx, workflows.Agenda{ChatID: chatID, At: agenda.Next(user.AgendaHour, user.Location(), time.Now())})
+	run, err := workflow.Start(ctx, workflows.Agenda{ChatID: chatID, At: agenda.Next(user.AgendaHour, user.Location(), time.Now())})
 	if err != nil {
 		return errors.Join(err, a.Store.Release(ctx, key))
 	}

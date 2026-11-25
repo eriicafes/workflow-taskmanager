@@ -220,7 +220,7 @@ func (a *App) handleCallback(ctx context.Context, bot *telegram.Client, query te
 		}
 		if action == "tz" {
 			ctx := workflow.NewContext(ctx, a.Client)
-			if _, err := workflows.StartOnLatest(ctx, workflows.Reminder{ChatID: chatID, Kind: workflows.KindTask, ItemID: task.ID, At: task.RemindAt, Version: task.Version}); err != nil {
+			if _, err := workflow.Start(ctx, workflows.Reminder{ChatID: chatID, Kind: workflows.KindTask, ItemID: task.ID, At: task.RemindAt, Version: task.Version}); err != nil {
 				return err
 			}
 		} else if err := a.Store.PruneTasks(ctx, chatID); err != nil {

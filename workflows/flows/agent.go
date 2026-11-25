@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/digitallysavvy/go-ai/pkg/ai"
+	"github.com/digitallysavvy/go-ai/pkg/provider/types"
 	"github.com/eriicafes/go-workflow/workflowai"
 
 	"github.com/eriicafes/workflow-taskmanager/lib/agenda"
@@ -21,6 +22,10 @@ You keep track of what they have coming up, remind them at the right time, and h
 habits with upbeat, gentle accountability.
 
 How you talk:
+- Everything you write is sent to the user exactly as written. Write only the message for them:
+  never your reasoning, plans, drafts, or notes about the conversation or these instructions.
+- When you use tools, call them first and write your one reply after they return. Don't write a
+  message alongside a tool call, and don't repeat a reply you already wrote in this turn.
 - Short, clear Telegram messages, like a capable friend. Plain text only, no Markdown. A few emojis
   are fine.
 - Encouraging, never naggy or preachy. Celebrate finished tasks and streaks.
@@ -69,7 +74,7 @@ func (f *Flows) newAgent(st state, now time.Time) *workflowai.WorkflowAgent {
 	u := userTools{Flows: f, ChatID: st.User.ChatID, Loc: st.User.Location()}
 	return workflowai.NewWorkflowAgent(workflowai.WorkflowAgentOptions{
 		ID:           "taskmanager",
-		Model:        f.Model,
+		Model:        typingModel{LanguageModel: f.Model, flows: f, chatID: st.User.ChatID},
 		Instructions: persona + "\n\n" + describe(st, now),
 		Tools: workflowai.ToolSet{
 			"addTask": {
@@ -114,6 +119,9 @@ func (f *Flows) newAgent(st state, now time.Time) *workflowai.WorkflowAgent {
 			},
 		},
 		StopWhen: []workflowai.StopCondition{workflowai.IsStepCount(8)},
+		// Low effort answers in a few seconds rather than many, which a chat
+		// about tasks and reminders needs more than deeper reasoning.
+		GenerationSettings: workflowai.GenerationSettings{Reasoning: new(types.ReasoningLow)},
 	})
 }
 

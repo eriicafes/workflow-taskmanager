@@ -1,25 +1,17 @@
 // Package workflows declares Task Manager's workflow types. Handlers start
 // runs of them without importing their runners in workflows/flows.
 //
-// Start every run of them with StartOnLatest.
+// A run that starts another starts it on the latest deployment, with
+// workflow.LatestDeployment, so chains of runs move to new deployments as
+// they hand off and none is stranded on a deleted one. Handlers start runs
+// with no options: they already run on the latest deployment.
 package workflows
 
 import (
-	"context"
 	"time"
 
 	"github.com/eriicafes/go-workflow"
-	"github.com/eriicafes/go-workflow/worlds"
 )
-
-// StartOnLatest starts a run of input on the World's latest deployment.
-// Every run here starts with it: nothing waits on their output, and each
-// either ends within minutes or starts its own next run within days, so no
-// run outlives Vercel's deployment retention. ctx must carry a workflow
-// Client or belong to a run.
-func StartOnLatest[In worlds.Workflow[Out], Out any](ctx context.Context, input In) (*workflow.Run[Out], error) {
-	return workflow.Start(ctx, input, workflow.StartOptions{Deployment: workflow.LatestDeployment})
-}
 
 // Conversation answers a user's mailbox in order. One runs per user at a
 // time, and it ends once the mailbox stays empty for a while. Use Deliver

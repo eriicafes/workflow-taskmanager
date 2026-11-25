@@ -30,7 +30,7 @@ func Deliver(ctx context.Context, s *store.Store, chatID int64, mail store.Mail)
 	if notFound := new(workflow.HookNotFoundError); !errors.As(err, &notFound) {
 		return err
 	}
-	_, err = StartOnLatest(ctx, Conversation{ChatID: chatID})
+	_, err = workflow.Start(ctx, Conversation{ChatID: chatID})
 	return err
 }
 

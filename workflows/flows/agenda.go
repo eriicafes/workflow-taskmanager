@@ -31,7 +31,7 @@ func (f *Flows) Agenda(ctx context.Context, input workflows.Agenda) (workflows.A
 		return result, err
 	}
 	result.Sent = sent.Sent
-	run, err := workflows.StartOnLatest(ctx, workflows.Agenda{ChatID: input.ChatID, At: sent.Next})
+	run, err := workflow.Start(ctx, workflows.Agenda{ChatID: input.ChatID, At: sent.Next}, workflow.StartOptions{Deployment: workflow.LatestDeployment})
 	if err != nil {
 		return result, err
 	}

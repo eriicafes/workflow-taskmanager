@@ -67,7 +67,7 @@ func (f *Flows) Conversation(ctx context.Context, input workflows.Conversation) 
 	if err != nil || pending == 0 {
 		return result, err
 	}
-	_, err = workflows.StartOnLatest(ctx, workflows.Conversation{ChatID: input.ChatID})
+	_, err = workflow.Start(ctx, workflows.Conversation{ChatID: input.ChatID}, workflow.StartOptions{Deployment: workflow.LatestDeployment})
 	return result, err
 }
 

@@ -4,6 +4,7 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build",
   "outputDirectory": "web/dist",
+  "regions": ["iad1"],
   "functions": {
     "api/queue.go": {
       "maxDuration": 300,

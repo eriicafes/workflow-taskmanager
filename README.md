@@ -44,6 +44,9 @@ to step 2.
 | `Reminder` | `addTask`, `updateTask`, `addHabit`, `updateHabit`, the Snooze button, then itself | Sleeps toward the reminder's time for at most 6 days, then starts the next run toward it. Once due, sends the reminder with buttons. A habit's run then starts the run for its next reminder. A run whose task or habit is gone, done, or has a newer `Version` ends without sending, so rescheduling and deleting need no cancelling. |
 | `Agenda` | A user's first message, then itself every day | Sleeps until the user's agenda hour (8 am by default) and sends the day's overdue and due tasks, habits, and what's coming up this week, then starts the next day's run. Changing the agenda hour or time zone starts a new chain; the old one ends when it sees the store records another run. |
 
+The agent asks the model for low reasoning effort, so replies take seconds,
+and the chat shows the bot typing for as long as each model call runs.
+
 The agent's tools: `addTask`, `updateTask` (including marking done),
 `deleteTask`, `addHabit`, `updateHabit`, `logHabit`, `deleteHabit`, and
 `updateSettings` (name, time zone, agenda hour, pausing habit reminders).
@@ -60,9 +63,9 @@ Every message is pushed to the user's mailbox in Redis, then wakes their
 `Conversation` run through a hook, or starts one when none is listening. A
 message that arrives while the agent is replying waits its turn and is
 answered with that context, and mail that arrives as a run ends is picked up
-by the next. Every run starts on the latest deployment, and no run sleeps
-longer than six days before starting the next, so runs move to new
-deployments within days and none is stranded on a deleted deployment.
+by the next. A run that starts another starts it on the latest deployment,
+and no run sleeps longer than six days before starting the next, so runs move
+to new deployments within days and none is stranded on a deleted deployment.
 
 Data lives in Redis under `taskmanager:*`: the bot, allowed users and access
 requests, and per user their settings, tasks, habits, and the last messages of
@@ -114,7 +117,9 @@ Without Vite, build the assets once with `pnpm build` and run
 
 `vercel.json` installs and builds the Tailwind assets before the Go functions
 compile, so `web/dist` is embedded in them, and serves `web/dist` as the
-static output. It subscribes `api/queue.go` to the `taskmanager-workflow`
+static output. It runs every function in `iad1`, where the workflow
+backend and queue keep runs by default, so a turn's many round trips to them
+stay in one region. It subscribes `api/queue.go` to the `taskmanager-workflow`
 topic, so it has no public URL, and rewrites every other path to
 `api/index.go`, which serves the setup page, Telegram's webhook at
 `/telegram`, and the World's endpoints under `/v1/workflow`. The World's RPC
