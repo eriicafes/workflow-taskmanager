@@ -6,7 +6,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.40.0
 	github.com/digitallysavvy/go-ai v0.5.2
 	github.com/eriicafes/go-dev v0.4.0
-	github.com/eriicafes/go-workflow v0.10.2
+	github.com/eriicafes/go-workflow v0.11.0
 	github.com/eriicafes/httpx v0.5.1
 	github.com/eriicafes/tmpl v0.16.0
 	github.com/redis/go-redis/v9 v9.7.3
@@ -36,6 +36,7 @@ require (
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.46.0 // indirect
 	go.opentelemetry.io/otel/metric v1.46.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.46.0 // indirect
 	go.opentelemetry.io/otel/trace v1.46.0 // indirect
 	golang.org/x/crypto v0.58.0 // indirect
 	golang.org/x/net v0.61.0 // indirect
