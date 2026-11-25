@@ -361,6 +361,48 @@ func TestCommands(t *testing.T) {
 	}
 }
 
+// /reset clears the chat and the mailbox, keeps tasks, and gives the user a
+// new agenda chain in place of the one they had.
+func TestReset(t *testing.T) {
+	app, fake, secret := connected(t)
+	ctx := t.Context()
+	if err := app.Store.SaveTask(ctx, 42, store.Task{ID: "t1", Title: "Pay rent", CreatedAt: time.Now()}); err != nil {
+		t.Fatal(err)
+	}
+	if err := app.Store.Note(ctx, 42, "Sent the user a reminder."); err != nil {
+		t.Fatal(err)
+	}
+	if err := app.Store.PushMail(ctx, 42, store.Mail{Text: "unanswered"}); err != nil {
+		t.Fatal(err)
+	}
+	if code := update(t, app, secret, message(42, "/today")); code != http.StatusOK {
+		t.Fatalf("/today: %d", code)
+	}
+	old, _ := app.Store.AgendaRun(ctx, 42)
+	if old == "" {
+		t.Fatal("no agenda chain before /reset")
+	}
+
+	if code := update(t, app, secret, message(42, "/reset")); code != http.StatusOK {
+		t.Fatalf("/reset: %d", code)
+	}
+	if got := fake.lastSent(); !strings.Contains(got, "Fresh start") {
+		t.Fatalf("/reset = %q", got)
+	}
+	if history, _ := app.Store.History(ctx, 42); len(history) != 0 {
+		t.Fatalf("history kept: %+v", history)
+	}
+	if n, _ := app.Store.MailCount(ctx, 42); n != 0 {
+		t.Fatalf("%d mail kept", n)
+	}
+	if task, err := app.Store.Task(ctx, 42, "t1"); err != nil || task.Title != "Pay rent" {
+		t.Fatalf("task lost: %+v, %v", task, err)
+	}
+	if id, _ := app.Store.AgendaRun(ctx, 42); id == "" || id == old {
+		t.Fatalf("agenda run %q, was %q", id, old)
+	}
+}
+
 func TestReminderButtons(t *testing.T) {
 	app, fake, secret := connected(t)
 	ctx := t.Context()

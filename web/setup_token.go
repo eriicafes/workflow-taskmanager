@@ -24,7 +24,7 @@ var commands = []telegram.BotCommand{
 	{Command: "pause", Description: "Pause habit reminders"},
 	{Command: "resume", Description: "Resume habit reminders"},
 	{Command: "id", Description: "Show your Telegram user ID"},
-	{Command: "reset", Description: "Clear our chat (I keep your tasks)"},
+	{Command: "reset", Description: "Start our chat fresh (I keep your tasks and habits)"},
 }
 
 // SetupToken serves POST /setup/token. It checks the token from @BotFather

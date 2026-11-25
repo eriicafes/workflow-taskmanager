@@ -125,10 +125,13 @@ func (a *App) handleMessage(ctx context.Context, bot *telegram.Client, message t
 	case "":
 		return send("I can only read text for now 🙈 Just type out what you need to do.")
 	case "/reset":
-		if err := a.Store.ClearHistory(ctx, chatID); err != nil {
+		if err := a.Store.ResetChat(ctx, chatID); err != nil {
 			return err
 		}
-		return send("Fresh start! I cleared our chat, but your tasks and habits are all still here ✅")
+		if err := a.startAgenda(workflow.NewContext(ctx, a.Client), chatID); err != nil {
+			return err
+		}
+		return send("Fresh start! I cleared our chat, but your tasks, habits and settings are all still here ✅")
 	case "/today":
 		tasks, habits, err := a.lists(ctx, chatID)
 		if err != nil {

@@ -250,9 +250,10 @@ func (s *Store) Note(ctx context.Context, chatID int64, text string) error {
 // itself, so the agent and the summarizer can tell it from the user's own.
 const NotePrefix = "[Task Manager, not typed by the user] "
 
-// ClearHistory forgets the user's conversation and its summary.
-func (s *Store) ClearHistory(ctx context.Context, chatID int64) error {
-	return s.rdb.Del(ctx, s.key("history", chatID), s.key("summary", chatID)).Err()
+// ResetChat forgets the user's conversation, its summary, and the mail
+// waiting in their mailbox. Their tasks, habits and settings stay.
+func (s *Store) ResetChat(ctx context.Context, chatID int64) error {
+	return s.rdb.Del(ctx, s.key("history", chatID), s.key("summary", chatID), s.key("mailbox", chatID)).Err()
 }
 
 // Summary is the running summary of the older part of a conversation,

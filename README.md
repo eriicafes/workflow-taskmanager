@@ -59,6 +59,10 @@ reminder buttons update the store and edit the reminder in place. Reminders,
 the agenda and button taps leave a note in the conversation, so when the user
 next writes, the agent knows what it sent and what they tapped.
 
+`/reset` starts the chat fresh: it clears the conversation, its summary and
+any unanswered mail, and starts a new agenda chain in place of the old one.
+Tasks, habits and settings stay.
+
 Every message is pushed to the user's mailbox in Redis, then wakes their
 `Conversation` run through a hook, or starts one when none is listening. A
 message that arrives while the agent is replying waits its turn and is

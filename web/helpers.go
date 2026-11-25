@@ -113,13 +113,23 @@ func (a *App) EnsureAgenda(ctx context.Context, chatID int64) error {
 	if first, err := a.Store.Once(ctx, key, time.Minute); err != nil || !first {
 		return err
 	}
+	if err := a.startAgenda(ctx, chatID); err != nil {
+		return errors.Join(err, a.Store.Release(ctx, key))
+	}
+	return nil
+}
+
+// startAgenda starts a new chain of Agenda runs for the user and records it
+// as theirs. A chain it replaces ends when its run wakes and finds it is no
+// longer the recorded one. ctx must carry the workflow Client.
+func (a *App) startAgenda(ctx context.Context, chatID int64) error {
 	user, err := a.Store.User(ctx, chatID)
 	if err != nil {
-		return errors.Join(err, a.Store.Release(ctx, key))
+		return err
 	}
 	run, err := workflow.Start(ctx, workflows.Agenda{ChatID: chatID, At: agenda.Next(user.AgendaHour, user.Location(), time.Now())})
 	if err != nil {
-		return errors.Join(err, a.Store.Release(ctx, key))
+		return err
 	}
 	return a.Store.SetAgendaRun(ctx, chatID, run.ID())
 }
