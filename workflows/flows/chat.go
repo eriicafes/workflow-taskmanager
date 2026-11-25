@@ -3,6 +3,7 @@ package flows
 import (
 	"context"
 	"slices"
+	"strings"
 
 	"github.com/eriicafes/go-workflow"
 	"github.com/eriicafes/go-workflow/workflowai"
@@ -25,14 +26,14 @@ func (f *Flows) chatTurn(ctx context.Context, chatID int64, texts []string) erro
 		Messages: append(slices.Clone(st.History), turn...),
 	})
 	if err != nil {
-		_, _ = workflow.Step(ctx, f.sendReply, reply{ChatID: chatID, Text: "Sorry, something went wrong on my side 😕 Try again in a moment?"})
+		_, _ = workflow.Step(ctx, f.sendReply, reply{ChatID: chatID, Text: "Ugh, something went wrong on my end 😕 Can you try that again in a bit?"})
 		return err
 	}
-	added := result.Messages[len(st.History):]
+	added := undashMessages(result.Messages[len(st.History):])
 	if _, err := workflow.Step(ctx, f.appendHistory, historyAppend{ChatID: chatID, Messages: added}); err != nil {
 		return err
 	}
-	text := result.Text
+	text := undash(result.Text)
 	if text == "" && len(result.ToolResults) == 0 {
 		text = "👍"
 	}
@@ -40,4 +41,31 @@ func (f *Flows) chatTurn(ctx context.Context, chatID int64, texts []string) erro
 		return err
 	}
 	return f.compactHistory(ctx, chatID)
+}
+
+// dashes replaces the em and en dashes that models write despite being asked
+// not to, which read as machine-written in a chat: an em dash becomes a
+// comma, and an en dash in a range like 9–5 a hyphen.
+var dashes = strings.NewReplacer(" — ", ", ", " —", ",", "—", ", ", " – ", ", ", "–", "-")
+
+// undash returns text without em or en dashes.
+func undash(text string) string { return dashes.Replace(text) }
+
+// undashMessages removes em and en dashes from the text the agent wrote in
+// messages, so its history never shows it writing them.
+func undashMessages(messages []workflowai.ModelMessage) []workflowai.ModelMessage {
+	out := slices.Clone(messages)
+	for i, message := range out {
+		if message.Role != workflowai.RoleAssistant {
+			continue
+		}
+		content := slices.Clone(message.Content)
+		for j, part := range content {
+			if part.Type == workflowai.PartText {
+				content[j].Text = undash(part.Text)
+			}
+		}
+		out[i].Content = content
+	}
+	return out
 }

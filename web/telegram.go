@@ -123,7 +123,7 @@ func (a *App) handleMessage(ctx context.Context, bot *telegram.Client, message t
 	now := time.Now().In(user.Location())
 	switch command {
 	case "":
-		return send("I can only read text for now. Tell me what you need to do 📝")
+		return send("I can only read text for now 🙈 Just type out what you need to do.")
 	case "/reset":
 		if err := a.Store.ClearHistory(ctx, chatID); err != nil {
 			return err
@@ -153,9 +153,9 @@ func (a *App) handleMessage(ctx context.Context, bot *telegram.Client, message t
 			return err
 		}
 		if user.Paused {
-			return send("⏸️ Habit reminders and your morning agenda are paused. Task reminders still come through. Send /resume when you're ready.")
+			return send("Okay, habit reminders and your morning agenda are paused ⏸️ Task reminders still come through. Send /resume whenever you're ready.")
 		}
-		return send("▶️ Habit reminders are back on.")
+		return send("Welcome back! Habit reminders are on again ▶️")
 	case "/start":
 		text = "Hi! I just started chatting with you. Introduce yourself briefly and ask where I'm based."
 	}

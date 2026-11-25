@@ -229,3 +229,17 @@ func TestSchemaHasDescriptions(t *testing.T) {
 		t.Fatalf("habitUpdate lacks the embedded schedule fields: %v", update)
 	}
 }
+
+func TestUndash(t *testing.T) {
+	for in, want := range map[string]string{
+		"Nice one — marked both done":  "Nice one, marked both done",
+		"Rent's sorted—nice":           "Rent's sorted, nice",
+		"Water every 2 hours, 9–9":     "Water every 2 hours, 9-9",
+		"Done – see you at 7:30 pm":    "Done, see you at 7:30 pm",
+		"No dashes here, just a comma": "No dashes here, just a comma",
+	} {
+		if got := undash(in); got != want {
+			t.Errorf("undash(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
